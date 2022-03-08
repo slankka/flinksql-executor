@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="https://slankka.com/schema/bestcoder" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="sqljob" type="bes:pfcjobType" xmlns:bes="https://slankka.com/schema/bestcoder"/>
+  <xs:complexType name="catalogType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="name"/>
+        <xs:attribute type="xs:string" name="type"/>
+        <xs:attribute type="xs:string" name="defaultDatabase"/>
+        <xs:attribute type="xs:string" name="hiveConfDir"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="configurationType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="pipeline.name"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="configType">
+    <xs:sequence>
+      <xs:element type="bes:catalogType" name="catalog" xmlns:bes="https://slankka.com/schema/bestcoder"/>
+      <xs:element type="bes:configurationType" name="configuration" xmlns:bes="https://slankka.com/schema/bestcoder"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="statementType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="type" use="optional"/>
+        <xs:attribute type="xs:string" name="id" use="optional"/>
+        <xs:attribute type="xs:string" name="ignore" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="statementsType">
+    <xs:sequence>
+      <xs:element type="bes:statementType" name="statement" maxOccurs="unbounded" minOccurs="0" xmlns:bes="https://slankka.com/schema/bestcoder"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pfcjobType">
+    <xs:sequence>
+      <xs:element type="bes:configType" name="config" xmlns:bes="https://slankka.com/schema/bestcoder"/>
+      <xs:element type="bes:statementsType" name="statements" xmlns:bes="https://slankka.com/schema/bestcoder"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

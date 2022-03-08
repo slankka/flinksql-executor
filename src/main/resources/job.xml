@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqljob xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://slankka.com/schema/bestcoder"
+        xsi:schemaLocation="https://slankka.com/schema/bestcoder schema/job.xsd">
+    <config>
+        <catalog name="pfc" type="hive" defaultDatabase="flink" hiveConfDir="/etc/hive/conf"/>
+        <configuration>
+            <pipeline.name>
+                TEST_SINK_JOB
+            </pipeline.name>
+        </configuration>
+    </config>
+    <statements>
+        <statement type="DML">
+            DROP TABLE IF EXISTS TEST_SINK
+        </statement>
+        <statement id="TEST_SINK_PRINT"  type="DML">
+            <![CDATA[
+            CREATE TABLE TEST_SINK (
+                id DECIMAL(20, 0)
+            ) with (
+                'connector' = 'print'
+            )
+            ]]>
+        </statement>
+        <statement id="TEST_SINK_ES" type="DML" ignore="true">
+            <![CDATA[
+            CREATE TABLE TEST_SINK (
+                id DECIMAL(20, 0),
+                PRIMARY KEY (id) NOT ENFORCED
+            ) WITH (
+                'connector' = 'elasticsearch-6',
+                'hosts' = 'http://127.0.0.1:9200',
+                'index' = 'es_billing',
+                'document-type' = '_doc',
+                'format' = 'json',
+                'json.encode.decimal-as-plain-number' = 'true',
+                'json.ignore-parse-errors' = 'true',
+                'json.fail-on-missing-field' = 'false',
+                'json.timestamp-format.standard' = 'ISO-8601'
+            )
+             ]]>
+        </statement>
+        <statement type="DML">
+            DROP TABLE IF EXISTS test_source_cdc
+        </statement>
+        <statement id="test_source_cdc" type="DML">
+            <![CDATA[
+            CREATE TABLE IF NOT EXISTS `test_source_cdc` (
+                id DECIMAL(20, 0),
+                PRIMARY KEY (id) NOT ENFORCED
+            ) WITH (
+                'connector' = 'mysql-cdc',
+                'hostname' = '127.0.0.1',
+                'port' = '3306',
+                'database-name' = 'es',
+                'server-time-zone' = 'GMT+8',
+                'table-name' = 'test_source',
+                'username' = 'root',
+                'password' = 'root'
+            )
+            ]]>
+        </statement>
+        <statement id="createFunction" type="DML">
+            create function IF NOT EXISTS FSE AS 'com.slankka.flink.udf.FlinkSQLEnhanced'
+        </statement>
+        <statement id="jobExecution" type="DML">
+            <![CDATA[
+            INSERT INTO `TEST_SINK`
+                SELECT
+                o.id
+            FROM
+            `es_bill_balance`
+            ]]>
+        </statement>
+    </statements>
+</sqljob>
